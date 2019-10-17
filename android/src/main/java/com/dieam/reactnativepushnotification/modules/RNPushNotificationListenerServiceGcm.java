@@ -92,10 +92,19 @@ public class RNPushNotificationListenerServiceGcm extends GcmListenerService {
 
     private void handleRemotePushNotification(ReactApplicationContext context, Bundle bundle) {
 
-        // If notification ID is not provided by the user for push notification, generate one at random
         if (bundle.getString("id") == null) {
             Random randomNumberGenerator = new Random(System.currentTimeMillis());
             bundle.putString("id", String.valueOf(randomNumberGenerator.nextInt()));
+        }
+        String payload = bundle.getString("message");
+
+        if(!payload.isEmpty()) {
+            bundle.putString("payload", payload);
+            String[] parts = payload.split("\"message\":");
+            if(parts.length>1){//{"entity_type":"JobVisitUser","title":"Visit Unassigned","message":"You have been unassigned from the following visit Thursday 17 Oct, 06:00","entity_id":302951,"type":null,"entity":null}
+                String message = parts[1].split(",\"entity_id\"")[0].replaceAll("\"", "");
+                bundle.putString("message", message);
+            }
         }
 
         Boolean isForeground = isApplicationInForeground();
@@ -112,13 +121,12 @@ public class RNPushNotificationListenerServiceGcm extends GcmListenerService {
 
         Log.v(LOG_TAG, "sendNotification: " + bundle);
 
-         if (!isForeground) {
-             Application applicationContext = (Application) context.getApplicationContext();
-             RNPushNotificationHelper pushNotificationHelper = new RNPushNotificationHelper(applicationContext);
-             String message = bundle.getString("message").split("message")[1].split(",")[0].replace(":","").replaceAll("\"","");
-             bundle.putString("message", message);
-             pushNotificationHelper.sendToNotificationCentre(bundle);
-         }
+        if (!isForeground) {
+            Application applicationContext = (Application) context.getApplicationContext();
+            RNPushNotificationHelper pushNotificationHelper = new RNPushNotificationHelper(applicationContext);
+
+            pushNotificationHelper.sendToNotificationCentre(bundle);
+        }
     }
 
     private boolean isApplicationInForeground() {
