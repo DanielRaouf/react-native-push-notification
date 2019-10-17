@@ -112,11 +112,13 @@ public class RNPushNotificationListenerServiceGcm extends GcmListenerService {
 
         Log.v(LOG_TAG, "sendNotification: " + bundle);
 
-        // if (!isForeground) {
-        //     Application applicationContext = (Application) context.getApplicationContext();
-        //     RNPushNotificationHelper pushNotificationHelper = new RNPushNotificationHelper(applicationContext);
-        //     pushNotificationHelper.sendToNotificationCentre(bundle);
-        // }
+         if (!isForeground) {
+             Application applicationContext = (Application) context.getApplicationContext();
+             RNPushNotificationHelper pushNotificationHelper = new RNPushNotificationHelper(applicationContext);
+             String message = bundle.getString("message").split("message")[1].split(",")[0].replace(":","").replaceAll("\"","");
+             bundle.putString("message", message);
+             pushNotificationHelper.sendToNotificationCentre(bundle);
+         }
     }
 
     private boolean isApplicationInForeground() {
