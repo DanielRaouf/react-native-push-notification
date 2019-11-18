@@ -13,8 +13,9 @@ import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
-import com.google.android.gms.gcm.GcmListenerService; 
+import com.google.android.gms.gcm.GcmListenerService;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -100,10 +101,12 @@ public class RNPushNotificationListenerServiceGcm extends GcmListenerService {
 
         if(!payload.isEmpty()) {
             bundle.putString("payload", payload);
-            String[] parts = payload.split("\"message\":");
-            if(parts.length>1){//{"entity_type":"JobVisitUser","title":"Visit Unassigned","message":"You have been unassigned from the following visit Thursday 17 Oct, 06:00","entity_id":302951,"type":null,"entity":null}
-                String message = parts[1].split(",\"entity_id\"")[0].replaceAll("\"", "");
+            try {
+                JSONObject obj = new JSONObject(payload);
+                String message = obj.getString("message");
                 bundle.putString("message", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
 
